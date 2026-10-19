@@ -1,0 +1,384 @@
+{
+  "name": "todo-comment-manager",
+  "displayName": "TODO Comment Manager",
+  "description": "TODO, FIXME и BUG: живая панель задач, приоритеты, статусы и статистика проекта.",
+  "version": "1.1.1",
+  "publisher": "sherm-dev",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "todo",
+    "fixme",
+    "bug",
+    "tasks"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "test": "npm run compile && node --test test/*.test.js",
+    "test:integration": "npm run compile && node test/run-integration.cjs",
+    "package": "npm run compile && vsce package --allow-missing-repository",
+    "vscode:prepublish": "npm run compile",
+    "test:package": "npm run package && node test/run-integration.cjs --vsix todo-comment-manager-1.1.1.vsix"
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "todoManager",
+          "title": "TODO Manager",
+          "icon": "resources/tasks.svg"
+        }
+      ]
+    },
+    "views": {
+      "todoManager": [
+        {
+          "id": "todoManager.tasks",
+          "name": "Задачи проекта",
+          "icon": "resources/tasks.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "todoManager.refresh",
+        "title": "TODO: Обновить",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "todoManager.add",
+        "title": "TODO: Создать задачу",
+        "icon": "$(add)"
+      },
+      {
+        "command": "todoManager.search",
+        "title": "TODO: Поиск",
+        "icon": "$(search)"
+      },
+      {
+        "command": "todoManager.filter",
+        "title": "TODO: Фильтры",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "todoManager.group",
+        "title": "TODO: Группировка",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "todoManager.sort",
+        "title": "TODO: Сортировка",
+        "icon": "$(sort-precedence)"
+      },
+      {
+        "command": "todoManager.reset",
+        "title": "TODO: Сбросить поиск и фильтры",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "todoManager.statistics",
+        "title": "TODO: Статистика проекта",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "todoManager.open",
+        "title": "TODO: Перейти к комментарию"
+      },
+      {
+        "command": "todoManager.status",
+        "title": "TODO: Изменить статус",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "todoManager.edit",
+        "title": "TODO: Редактировать задачу",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "todoManager.delete",
+        "title": "TODO: Удалить задачу",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "todoManager.enableHighlight",
+        "title": "TODO: Включить подсветку в коде",
+        "icon": "$(eye-closed)",
+        "enablement": "!todoManager.highlightEnabled"
+      },
+      {
+        "command": "todoManager.disableHighlight",
+        "title": "TODO: Выключить подсветку в коде",
+        "icon": "$(eye)",
+        "enablement": "todoManager.highlightEnabled"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "todoManager.add",
+          "when": "view == todoManager.tasks",
+          "group": "navigation@1"
+        },
+        {
+          "command": "todoManager.search",
+          "when": "view == todoManager.tasks",
+          "group": "navigation@2"
+        },
+        {
+          "command": "todoManager.filter",
+          "when": "view == todoManager.tasks",
+          "group": "navigation@3"
+        },
+        {
+          "command": "todoManager.refresh",
+          "when": "view == todoManager.tasks",
+          "group": "navigation@4"
+        },
+        {
+          "command": "todoManager.group",
+          "when": "view == todoManager.tasks",
+          "group": "options@1"
+        },
+        {
+          "command": "todoManager.sort",
+          "when": "view == todoManager.tasks",
+          "group": "options@2"
+        },
+        {
+          "command": "todoManager.reset",
+          "when": "view == todoManager.tasks",
+          "group": "options@3"
+        },
+        {
+          "command": "todoManager.statistics",
+          "when": "view == todoManager.tasks",
+          "group": "options@4"
+        },
+        {
+          "command": "todoManager.enableHighlight",
+          "when": "view == todoManager.tasks && !todoManager.highlightEnabled",
+          "group": "navigation@5"
+        },
+        {
+          "command": "todoManager.disableHighlight",
+          "when": "view == todoManager.tasks && todoManager.highlightEnabled",
+          "group": "navigation@5"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "todoManager.status",
+          "when": "view == todoManager.tasks && viewItem == todoTask",
+          "group": "inline@1"
+        },
+        {
+          "command": "todoManager.edit",
+          "when": "view == todoManager.tasks && viewItem == todoTask",
+          "group": "task@1"
+        },
+        {
+          "command": "todoManager.delete",
+          "when": "view == todoManager.tasks && viewItem == todoTask",
+          "group": "task@2"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "todoManager.add",
+          "group": "todo@1"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "todoManager.add",
+        "key": "ctrl+alt+t",
+        "mac": "cmd+alt+t",
+        "when": "editorTextFocus && !editorReadonly"
+      }
+    ],
+    "configuration": {
+      "title": "TODO Manager",
+      "properties": {
+        "todoManager.include": {
+          "type": "string",
+          "default": "**/*",
+          "description": "Glob файлов для сканирования."
+        },
+        "todoManager.exclude": {
+          "type": "string",
+          "default": "**/{node_modules,.git,dist,build,out,coverage,.next,vendor,.venv,venv}/**",
+          "description": "Glob исключённых путей. .gitignore автоматически не применяется."
+        },
+        "todoManager.maxFileSizeKB": {
+          "type": "number",
+          "default": 1024,
+          "minimum": 1,
+          "description": "Максимальный размер сканируемого файла (КБ)."
+        },
+        "todoManager.debounceMs": {
+          "type": "number",
+          "default": 300,
+          "minimum": 50,
+          "description": "Задержка обновления после редактирования (мс)."
+        },
+        "todoManager.commentSyntax": {
+          "type": "object",
+          "default": {},
+          "description": "Синтаксис по languageId: например {\"myLang\": {\"line\": [\"//\"], \"block\": [[\"/*\", \"*/\"]]}}.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "line": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "block": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "colors": [
+      {
+        "id": "todoManager.highlight.criticalBackground",
+        "description": "TODO Manager: фон маркера CRITICAL.",
+        "defaults": {
+          "dark": "#F8514933",
+          "light": "#FFEBE9",
+          "highContrast": "#8B0000",
+          "highContrastLight": "#FFEBE9"
+        }
+      },
+      {
+        "id": "todoManager.highlight.criticalForeground",
+        "description": "TODO Manager: текст маркера CRITICAL.",
+        "defaults": {
+          "dark": "#FF7B72",
+          "light": "#A40E26",
+          "highContrast": "#FFFFFF",
+          "highContrastLight": "#A40E26"
+        }
+      },
+      {
+        "id": "todoManager.highlight.highBackground",
+        "description": "TODO Manager: фон маркера HIGH.",
+        "defaults": {
+          "dark": "#F0883E33",
+          "light": "#FFF1E5",
+          "highContrast": "#703800",
+          "highContrastLight": "#FFF1E5"
+        }
+      },
+      {
+        "id": "todoManager.highlight.highForeground",
+        "description": "TODO Manager: текст маркера HIGH.",
+        "defaults": {
+          "dark": "#FFA657",
+          "light": "#953800",
+          "highContrast": "#FFFFFF",
+          "highContrastLight": "#953800"
+        }
+      },
+      {
+        "id": "todoManager.highlight.mediumBackground",
+        "description": "TODO Manager: фон маркера MEDIUM.",
+        "defaults": {
+          "dark": "#D2992233",
+          "light": "#FFF8C5",
+          "highContrast": "#665500",
+          "highContrastLight": "#FFF8C5"
+        }
+      },
+      {
+        "id": "todoManager.highlight.mediumForeground",
+        "description": "TODO Manager: текст маркера MEDIUM.",
+        "defaults": {
+          "dark": "#E3B341",
+          "light": "#6B5200",
+          "highContrast": "#FFFFFF",
+          "highContrastLight": "#6B5200"
+        }
+      },
+      {
+        "id": "todoManager.highlight.lowBackground",
+        "description": "TODO Manager: фон маркера LOW.",
+        "defaults": {
+          "dark": "#58A6FF33",
+          "light": "#DDF4FF",
+          "highContrast": "#003D80",
+          "highContrastLight": "#DDF4FF"
+        }
+      },
+      {
+        "id": "todoManager.highlight.lowForeground",
+        "description": "TODO Manager: текст маркера LOW.",
+        "defaults": {
+          "dark": "#79C0FF",
+          "light": "#0550AE",
+          "highContrast": "#FFFFFF",
+          "highContrastLight": "#0550AE"
+        }
+      },
+      {
+        "id": "todoManager.highlight.noneBackground",
+        "description": "TODO Manager: фон маркера без приоритета.",
+        "defaults": {
+          "dark": "#8B949E26",
+          "light": "#EAEEF2",
+          "highContrast": "#383838",
+          "highContrastLight": "#EAEEF2"
+        }
+      },
+      {
+        "id": "todoManager.highlight.noneForeground",
+        "description": "TODO Manager: текст маркера без приоритета.",
+        "defaults": {
+          "dark": "#C9D1D9",
+          "light": "#424A53",
+          "highContrast": "#FFFFFF",
+          "highContrastLight": "#424A53"
+        }
+      }
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "~1.96.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "minimatch": "^10.0.3"
+  },
+  "icon": "resources/icon.png",
+  "author": {
+    "name": "Шерматов Зуфар Фаррухович"
+  }
+}
